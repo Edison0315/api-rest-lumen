@@ -85,9 +85,14 @@ class DirectorioController extends Controller {
 
         // Se consume el metodo de abajo de validacion
         $this->validar($request);
+
+        // Validar si viene una foto
+        $input = $request->all();
+        if ($request->has('url_foto'))
+            $input['url_foto'] = $this->cargarFoto($request->url_foto);
         
         // Crear los datos
-        Directorio::create($request->all());
+        Directorio::create($input);
 
         // Retornar en estandar JSON, con estado
         return response()->json([
@@ -106,12 +111,17 @@ class DirectorioController extends Controller {
         // En el validador en el UNIQUE cuando se ve ese parametro: @id
         // se usa para validar todos menos el que yo tengo        
         $this->validar($request, $id);
+
+        // Validar si viene una foto
+        $input = $request->all();
+        if ($request->has('url_foto'))
+            $input['url_foto'] = $this->cargarFoto($request->url_foto);
         
         // Buscar los datos
         $directorio = Directorio::find($id);
 
         // Actualizar los datos encontrados
-        $directorio->update($request->all());
+        $directorio->update($input);
 
         // Retornar en estandar JSON, con estado
         return response()->json([
@@ -147,6 +157,16 @@ class DirectorioController extends Controller {
             'nombre_completo' => 'required|min:3|max:100', 
             'telefono'        => 'required|unique:directorios,telefono'.$rule
         ]);
+
+    }
+
+    // METODO PARA VALIDAR CAMPOS
+    // @$file  => valor de la foto que necesitamos 
+    private function cargarFoto($file){
+        
+        $nombreArchivo = time() . "." . $file->getClientOriginalExtension();
+        $file->move(base_path('/public/fotografias'), $nombreArchivo);
+        return $nombreArchivo;
 
     }
 }

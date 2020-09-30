@@ -15,50 +15,92 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-// Select * from o filtro (@nombre_completo || @telefono)
-// *****************************************************
-$router->get('directorios',
-    // El 'as' es el name de la ruta
-    // El 'uses' es el metodo en el controlador donde va a llegar
+// Insert into users values (?,?,?)
+// ********************************
+$router->post('users/',
     [
-        'as'   => 'directorios', 
-        'uses' => 'DirectorioController@index'
+        'as'   => 'users.store', 
+        'uses' => 'UserController@store'
     ]
 );
 
-// Select * from where id = ? 
-// **************************
-$router->get('directorios/{id}',
+// Autenticacion
+// *************
+$router->post('login/',
     [
-        'as'   => 'directorios.show', 
-        'uses' => 'DirectorioController@show'
+        'as'   => 'users.login', 
+        'uses' => 'UserController@login'
     ]
 );
 
-// Insert into directorios values (?,?,?)
-// **************************************
-$router->post('directorios/',
-    [
-        'as'   => 'directorios.store', 
-        'uses' => 'DirectorioController@store'
-    ]
-);
+// *********************************************
+// Grupo de rutas para proteger la autenticacion
+// *********************************************
+$router->group(['middleware' => 'auth'], function() use ($router) {
 
-// update directorios set values (?,?,?) where id = ?
-// **************************************
-$router->put('directorios/{id}',
-    [
-        'as'   => 'directorios.store', 
-        'uses' => 'DirectorioController@update'
-    ]
-);
+    // Select * from o filtro (@nombre_completo || @telefono)
+    // *****************************************************
+    $router->get('directorios',
+        // El 'as' es el name de la ruta
+        // El 'uses' es el metodo en el controlador donde va a llegar
+        [
+            'as'   => 'directorios', 
+            'uses' => 'DirectorioController@index'
+        ]
+    );
+    
+    // Select * from where id = ? 
+    // **************************
+    $router->get('directorios/{id}',
+        [
+            'as'   => 'directorios.show', 
+            'uses' => 'DirectorioController@show'
+        ]
+    );
+    
+    // Insert into directorios values (?,?,?)
+    // **************************************
+    $router->post('directorios/',
+        [
+            'as'   => 'directorios.store', 
+            'uses' => 'DirectorioController@store'
+        ]
+    );
+    
+    // update directorios set values (?,?,?) where id = ?
+    // **************************************
+    $router->put('directorios/{id}',
+        [
+            'as'   => 'directorios.store', 
+            'uses' => 'DirectorioController@update'
+        ]
+    );
+    
+    // delete from directorios where id = ?
+    // **************************************
+    $router->delete('directorios/{id}',
+        [
+            'as'   => 'directorios.store', 
+            'uses' => 'DirectorioController@delete'
+        ]
+    );
 
-// delete from directorios where id = ?
-// **************************************
-$router->delete('directorios/{id}',
-    [
-        'as'   => 'directorios.store', 
-        'uses' => 'DirectorioController@delete'
-    ]
-);
+    // select * from user logueado
+    // ***************************
+    $router->get('user', function() use ($router) {
+        return auth()->user();
+    });
+
+
+    // Destruir la Autenticacion
+    // *************************
+    $router->post('logout/',
+        [
+            'as'   => 'users.logout', 
+            'uses' => 'UserController@logout'
+        ]
+    );
+
+});
+
 
